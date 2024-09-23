@@ -1,10 +1,51 @@
-apiVersion: apps/v1 #specify the API version
-kind: Deployment #specify the kind of deployment
-metadata: # meta data that help to identify resources
-  name: book-catalog 
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-management
 spec:
-  replicas: 1 # replica count
-  selector: # identify which port to deployment
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inventory-management
+  template:
+    metadata:
+      labels:
+        app: inventory-management
+    spec:
+      containers:
+      - name: inventory-management-container
+        image: pasan12345.azurecr.io/project_part3-inventory_management:latest
+        ports:
+        - containerPort: 8002
+        env: 
+        - name: "DATABASE_URL"
+          value: "postgresql://temp_nl1b_user:UMvgg4jCa1ubHMMobWGlmfta94g0wNAf@dpg-crmv49tumphs73fa59p0-a.oregon-postgres.render.com/temp_nl1b"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory-management-service
+spec:
+  selector:
+    app: inventory-management
+  ports:
+    - protocol: TCP
+      port: 8002
+      targetPort: 8002         
+  type: LoadBalancer
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: book-catalog
+  labels:
+    app: book-catalog
+spec:
+  replicas: 1
+  selector:
     matchLabels:
       app: book-catalog
   template:
@@ -12,26 +53,25 @@ spec:
       labels:
         app: book-catalog
     spec:
-      containers: # container details
-      - name: book-catalog
-        image: bookc:latest # image name
-        imagePullPolicy: Never # set image pull policy to never
-        ports: 
-        - containerPort: 8000 # define container port
-        env: # define environment variables
+      containers:
+      - name: book-catalog-container
+        image: pasan12345.azurecr.io/project_part3-book_catalog:latest
+        ports:
+        - containerPort: 8001
+        env: 
         - name: "DATABASE_URL"
-          value: "postgresql://part2_mfvj_user:5r6rXsbOoRBDha9dIslt6OCeHa0cBOUT@dpg-crjnlktumphs73d2f1p0-a.oregon-postgres.render.com/part2_mfvj"
+          value: "postgresql://temp_nl1b_user:UMvgg4jCa1ubHMMobWGlmfta94g0wNAf@dpg-crmv49tumphs73fa59p0-a.oregon-postgres.render.com/temp_nl1b"
+
 ---
 apiVersion: v1
-kind: Service # Declares that this resource is a Service
+kind: Service
 metadata:
-  name: book-catalog
+  name: book-catalog-service
 spec:
   selector:
     app: book-catalog
-  type: NodePort
   ports:
     - protocol: TCP
-      port: 8000
-      targetPort: 8000
-      nodePort: 30000
+      port: 8001
+      targetPort: 8001
+  type: LoadBalancer

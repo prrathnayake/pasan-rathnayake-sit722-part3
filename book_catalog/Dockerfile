@@ -1,8 +1,8 @@
 FROM python:3.11-alpine 
 # use python:3.11-alpine as base image
 
-WORKDIR /app/
-# set working directory ./app
+WORKDIR /bookcatalog/
+# set working directory ./inventory_management
 
 RUN pip install --upgrade pip
 # upgrade pip
@@ -10,10 +10,10 @@ RUN pip install --upgrade pip
 COPY . .
 # copy all files to container
 
-RUN pip install -r ./book_catalog/requirements.txt
+RUN pip install -r ./requirements.txt
 # installing requirements for image
 
-COPY /book_catalog .
-# go into ./book_catalog directory
+COPY . .
+# go into ./app directory
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8001"]
